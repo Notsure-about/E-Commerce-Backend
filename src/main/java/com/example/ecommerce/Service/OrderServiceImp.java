@@ -6,11 +6,13 @@ import com.example.ecommerce.Repository.CartRepository;
 import com.example.ecommerce.Repository.OrderRepository;
 import com.example.ecommerce.Repository.ProductRepository;
 import com.example.ecommerce.Repository.UserRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class OrderServiceImp implements OrderService{
     @Autowired
@@ -21,6 +23,14 @@ public class OrderServiceImp implements OrderService{
     private CartRepository cartRepository;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private ModelMapper modelMapper;
+    public OrderDto ConvertoDto(Order order){
+        return modelMapper.map(order,OrderDto.class);
+    }
+    public Order ConvertoEnt(OrderDto dto){
+        return  modelMapper.map(dto ,Order.class);
+    }
     @Override
     public OrderDto placeOrder(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("user not found"));
@@ -55,13 +65,13 @@ public class OrderServiceImp implements OrderService{
         order.setTotalAmount(totalAmount);
 
         Order savedOrder = orderRepository.save(order);
-
         // Clear the cart after placing order
         cart.getItems().clear();
         cartRepository.save(cart);
-    return null;
+    return ConvertoDto(savedOrder);
     }
-    public void cancelOrder(Long userId, Long orderId) {
+    @Override
+    public String cancelOrder(Long userId, Long orderId) {
 
         // 1. fetch user by userId
         User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("user not found"));
@@ -87,6 +97,20 @@ public class OrderServiceImp implements OrderService{
            order.setOrderStatus(OrderStatus.cancelled);
         // 7. save the order
         orderRepository.save(order);
+        return "Order Cancelled Successfully";
+    }
+
+    @Override
+    public List<OrderDto> getOrderHistory(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("user not found"));
+        List<Order> orders = orderRepository.findOrderByUser(userId);
+        if(orders == null || orders.isEmpty()){
+            throw new RuntimeException("No Order Found For This User");
+        }
+        return orders
+                .stream()
+                .map(this::ConvertoDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -96,13 +120,13 @@ public class OrderServiceImp implements OrderService{
         if(!order.getUser().getId().equals(userId)){
             throw new RuntimeException("order does not belong to the user");
         }
-        return order;
+        return ConvertoDto(order);
     }
 
     @Override
     public OrderDto getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("order not found"));
-
+     return ConvertoDto(order);
     }
 }
