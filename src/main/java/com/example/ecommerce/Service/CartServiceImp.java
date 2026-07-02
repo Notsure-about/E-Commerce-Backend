@@ -29,7 +29,10 @@ public class CartServiceImp implements CartService {
 
     @Transactional
     @Override
-    public void AddProduct(Long userId, Long productId, int quantity) {
+    public String AddProduct(Long userId, CartItemDto dto) {
+        //extract the details from dto
+        Long productId = dto.getProductId();
+        int quantity = dto.getQuantity();
         if(quantity<=0){
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
@@ -67,6 +70,7 @@ public class CartServiceImp implements CartService {
         }
 
         cartRepository.save(cart);
+        return "Product is Added Successfully";
     }
 
     @Override

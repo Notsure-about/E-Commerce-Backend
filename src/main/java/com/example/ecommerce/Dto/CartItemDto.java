@@ -12,8 +12,8 @@ import lombok.Setter;
 public class CartItemDto {
     private Long productId;
     private String title;
-    private double price;
+    private Double price;
     private int quantity;
-    private double totalPrice;
+    private Double totalPrice;
 }
 
