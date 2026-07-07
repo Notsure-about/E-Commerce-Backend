@@ -2,6 +2,7 @@ package com.example.ecommerce.Service;
 
 import com.example.ecommerce.Entity.Category;
 import com.example.ecommerce.Entity.Product;
+import com.example.ecommerce.Exception.ResourceNotFoundException;
 import com.example.ecommerce.Repository.CategoryRepository;
 import com.example.ecommerce.Repository.ProductRepository;
 import com.example.ecommerce.Dto.ProductDto;
@@ -34,7 +35,7 @@ public class ProductServiceImp implements ProductService{
        return dto;
    }
     public ProductDto createProduct(ProductDto dto) {
-        Category category = categoryRepository.findById(dto.getCategoryId()).orElseThrow(()-> new RuntimeException("Category not found"));
+        Category category = categoryRepository.findById(dto.getCategoryId()).orElseThrow(()-> new ResourceNotFoundException("Category","categoryId",dto.getCategoryId()));
         Product product = new Product();
         product.setTitle(dto.getTitle());
         product.setDescription(dto.getDescription());
@@ -47,14 +48,14 @@ public class ProductServiceImp implements ProductService{
     }
     @Override
     public ProductDto UpdateProduct(Long id, ProductDto dto) {
-        Product product = productRepository.findById(id).orElseThrow(()->new RuntimeException("Product not Found"));
+        Product product = productRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Product","productId",id));
         product.setStock(dto.getStock());
         product.setTitle(dto.getTitle());
         product.setPrice(dto.getPrice());
         product.setDescription(dto.getDescription());
         product.setImageName(dto.getImageName());
         if (dto.getCategoryId()!=null){
-            Category category = categoryRepository.findById(dto.getCategoryId()).orElseThrow(()-> new RuntimeException("Category not found"));
+            Category category = categoryRepository.findById(dto.getCategoryId()).orElseThrow(()-> new ResourceNotFoundException("Category","categoryId",dto.getCategoryId()));
             product.setCategory(category);
         }
         Product updated = productRepository.save(product);
@@ -63,13 +64,13 @@ public class ProductServiceImp implements ProductService{
 
     @Override
     public void DeleteProduct(Long id) {
-          Product product = productRepository.findById(id).orElseThrow(()->new RuntimeException("product not found"));
+          Product product = productRepository.findById(id).orElseThrow(()->new  ResourceNotFoundException("Product","productId",id));
          productRepository.delete(product);
     }
 
     @Override
     public ProductDto GetProductById(Long id) {
-    Product product = productRepository.findById(id).orElseThrow(()->new RuntimeException("Product not found"));
+    Product product = productRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Product","productId",id));
         return convertToDto(product);
     }
 

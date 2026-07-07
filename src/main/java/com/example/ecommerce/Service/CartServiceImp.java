@@ -6,6 +6,7 @@ import com.example.ecommerce.Entity.Cart;
 import com.example.ecommerce.Entity.CartItem;
 import com.example.ecommerce.Entity.Product;
 import com.example.ecommerce.Entity.User;
+import com.example.ecommerce.Exception.ResourceNotFoundException;
 import com.example.ecommerce.Repository.CartRepository;
 import com.example.ecommerce.Repository.ProductRepository;
 import com.example.ecommerce.Repository.UserRepository;
@@ -36,13 +37,13 @@ public class CartServiceImp implements CartService {
         if(quantity<=0){
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("user not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User","id",userId));
         Cart cart = cartRepository.findUserById(userId).orElseGet(() -> {
             Cart newcart = new Cart();
             newcart.setUser(user);
             return cartRepository.save(newcart);
         });
-        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("product not found"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product","id",productId));
 
         CartItem existingItem = cart.getItems()
                 .stream()
@@ -75,14 +76,14 @@ public class CartServiceImp implements CartService {
 
     @Override
     public void removeProduct(Long userId, Long productId) {
-        userRepository.findById(userId).orElseThrow(() -> new RuntimeException("user not found"));
-        Cart cart = cartRepository.findUserById(userId).orElseThrow(() -> new RuntimeException("cart not found"));
+        userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User","Id", userId));
+        Cart cart = cartRepository.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","userId",userId));
 
         CartItem cartItem = cart.getItems()
                 .stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("CartItem","productId",productId));
 
         cart.getItems().remove(cartItem);
         cartRepository.save(cart);
@@ -90,8 +91,8 @@ public class CartServiceImp implements CartService {
 
     @Override
     public CartDto getCartByUser(Long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new RuntimeException("user not found"));
-        Cart cart = cartRepository.findUserById(userId).orElseThrow(() -> new RuntimeException("cart not found"));
+        userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        Cart cart = cartRepository.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","userId",userId));
 
         List<CartItemDto> itemDtos = cart.getItems()
                 .stream()
@@ -113,7 +114,7 @@ public class CartServiceImp implements CartService {
 
     @Override
     public void clearCart(Long userId) {
-        Cart cart = cartRepository.findUserById(userId).orElseThrow(() -> new RuntimeException("cart not found"));
+        Cart cart = cartRepository.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","userId",userId));
         cart.getItems().clear();
         cartRepository.save(cart);
     }

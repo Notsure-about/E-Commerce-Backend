@@ -3,6 +3,7 @@ package com.example.ecommerce.Service;
 import com.example.ecommerce.Dto.RegisterRequestDto;
 import com.example.ecommerce.Dto.UserDto;
 import com.example.ecommerce.Entity.User;
+import com.example.ecommerce.Exception.ResourceNotFoundException;
 import com.example.ecommerce.Repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ public class UserServiceImp implements  UserService{
 
     @Override
     public UserDto UpdateUser(Long id, UserDto dto) {
-        User user = userRepository.findById(id).orElseThrow(()->new RuntimeException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("User","userId",id));
         user.setAbout(dto.getAbout());
         user.setEmail(dto.getEmail());
         user.setName(dto.getName());
@@ -43,7 +44,7 @@ public class UserServiceImp implements  UserService{
 
     @Override
     public UserDto GetUserById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(()->new RuntimeException("user not found"));
+        User user = userRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("User","userId",id));
         return ConvertToDto(user);
     }
 
@@ -57,7 +58,7 @@ public class UserServiceImp implements  UserService{
 
     @Override
     public void DeleteUserById(Long id) {
-   User user = userRepository.findById(id).orElseThrow(()->new RuntimeException("User not found"));
+   User user = userRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("User","userId",id));
    userRepository.delete(user);
     }
 }

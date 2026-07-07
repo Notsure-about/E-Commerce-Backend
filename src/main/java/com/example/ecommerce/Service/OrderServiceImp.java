@@ -2,6 +2,8 @@ package com.example.ecommerce.Service;
 
 import com.example.ecommerce.Dto.OrderDto;
 import com.example.ecommerce.Entity.*;
+import com.example.ecommerce.Exception.InvalidRequestException;
+import com.example.ecommerce.Exception.ResourceNotFoundException;
 import com.example.ecommerce.Repository.CartRepository;
 import com.example.ecommerce.Repository.OrderRepository;
 import com.example.ecommerce.Repository.ProductRepository;
@@ -34,10 +36,10 @@ public class OrderServiceImp implements OrderService{
     }
     @Override
     public OrderDto placeOrder(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("user not found"));
-        Cart cart = cartRepository.findUserById(userId).orElseThrow(() -> new RuntimeException("cart not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User","userId",userId));
+        Cart cart = cartRepository.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","userId",userId ));
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
-            throw new RuntimeException("cart is empty");
+            throw new InvalidRequestException("Cart is empty");
         }
         Order order = new Order();
         order.setUser(user);
@@ -47,7 +49,7 @@ public class OrderServiceImp implements OrderService{
         for (CartItem item : cart.getItems()) {
             Product product = item.getProduct();
             if (product.getStock() < item.getQuantity()) {
-                throw new RuntimeException("product out of stock");
+                throw new InvalidRequestException("Insufficient stock for product: " + product.getTitle());
 
             }
             OrderItem orderItem = new OrderItem();
@@ -75,18 +77,18 @@ public class OrderServiceImp implements OrderService{
     public String cancelOrder(Long userId, Long orderId) {
 
         // 1. fetch user by userId
-        User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("user not found"));
+        User user = userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("User","userId",userId));
         // 2. fetch order by orderId
-        Order order = orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("order not found"));
+        Order order = orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("Order","orderId",orderId));
 //        Optional<Order> orders = orderRepository.findOrderByUser(userId);
 //        orders.
         // 3. check if order belongs to this user
             if(!order.getUser().getId().equals(userId)){
-                throw new RuntimeException("order does not belong to this user");
+                throw new InvalidRequestException("Order does not belong to this user");
             }
         // 4. check if order is already delivered
             if(order.getOrderStatus() == OrderStatus.shipped){
-                throw new RuntimeException("order is already shipped");
+                throw new InvalidRequestException("Order already delivered, cannot cancel");
             }
         // 5. loop through order items and restore stock
              for( OrderItem item : order.getItems()){
@@ -103,10 +105,10 @@ public class OrderServiceImp implements OrderService{
 
     @Override
     public List<OrderDto> getOrderHistory(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("user not found"));
+        User user = userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("User","userId",userId));
         List<Order> orders = orderRepository.findOrderByUser(userId);
         if(orders == null || orders.isEmpty()){
-            throw new RuntimeException("No Order Found For This User");
+            throw new InvalidRequestException("Order Not Found for this user");
         }
         return orders
                 .stream()
@@ -116,10 +118,10 @@ public class OrderServiceImp implements OrderService{
 
     @Override
     public OrderDto getOrderByUserId(Long userId ,Long orderId) {
-        User user =  userRepository.findById(userId).orElseThrow(()-> new RuntimeException("user not found"));
-        Order order =  orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("order not found"));
+        User user =  userRepository.findById(userId).orElseThrow(()-> new ResourceNotFoundException("User","userId",userId));
+        Order order =  orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("Order","orderId",orderId));
         if(!order.getUser().getId().equals(userId)){
-            throw new RuntimeException("order does not belong to the user");
+            throw new InvalidRequestException("Order does not belong to this user");
         }
         return ConvertoDto(order);
     }
@@ -127,7 +129,7 @@ public class OrderServiceImp implements OrderService{
     @Override
     public OrderDto getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order","orderId",orderId));
      return ConvertoDto(order);
     }
 }
