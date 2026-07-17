@@ -19,26 +19,26 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class CartServiceImp implements CartService {
     @Autowired
-    private final CartRepository cartRepository;
+    private CartRepository cartRepository;
     @Autowired
-    private final ProductRepository productRepository;
+    private  ProductRepository productRepository;
     @Autowired
-    private final UserRepository userRepository;
+    private  UserRepository userRepository;
 
     @Transactional
     @Override
     public String AddProduct(Long userId, CartItemDto dto) {
         //extract the details from dto
+        System.out.println("AddProduct called with userId: " + userId);
         Long productId = dto.getProductId();
         int quantity = dto.getQuantity();
         if(quantity<=0){
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User","id",userId));
-        Cart cart = cartRepository.findUserById(userId).orElseGet(() -> {
+        Cart cart = cartRepository.findByUserId(userId).orElseGet(() -> {
             Cart newcart = new Cart();
             newcart.setUser(user);
             return cartRepository.save(newcart);
@@ -77,7 +77,7 @@ public class CartServiceImp implements CartService {
     @Override
     public void removeProduct(Long userId, Long productId) {
         userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User","Id", userId));
-        Cart cart = cartRepository.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","userId",userId));
+        Cart cart = cartRepository.findByUserId(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","userId",userId));
 
         CartItem cartItem = cart.getItems()
                 .stream()
@@ -92,7 +92,7 @@ public class CartServiceImp implements CartService {
     @Override
     public CartDto getCartByUser(Long userId) {
         userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
-        Cart cart = cartRepository.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","userId",userId));
+        Cart cart = cartRepository.findByUserId(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","userId",userId));
 
         List<CartItemDto> itemDtos = cart.getItems()
                 .stream()
@@ -114,7 +114,7 @@ public class CartServiceImp implements CartService {
 
     @Override
     public void clearCart(Long userId) {
-        Cart cart = cartRepository.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","userId",userId));
+        Cart cart = cartRepository.findByUserId(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","userId",userId));
         cart.getItems().clear();
         cartRepository.save(cart);
     }

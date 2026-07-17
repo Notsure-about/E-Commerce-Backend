@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
 public class OrderServiceImp implements OrderService{
@@ -37,7 +36,7 @@ public class OrderServiceImp implements OrderService{
     @Override
     public OrderDto placeOrder(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User","userId",userId));
-        Cart cart = cartRepository.findUserById(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","userId",userId ));
+        Cart cart = cartRepository.findByUserId(userId).orElseThrow(() -> new ResourceNotFoundException("Cart","userId",userId ));
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
             throw new InvalidRequestException("Cart is empty");
         }
@@ -80,7 +79,7 @@ public class OrderServiceImp implements OrderService{
         User user = userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("User","userId",userId));
         // 2. fetch order by orderId
         Order order = orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("Order","orderId",orderId));
-//        Optional<Order> orders = orderRepository.findOrderByUser(userId);
+//        Optional<Order> orders = orderRepository.findOrderByUser_Id(userId);
 //        orders.
         // 3. check if order belongs to this user
             if(!order.getUser().getId().equals(userId)){
@@ -106,7 +105,7 @@ public class OrderServiceImp implements OrderService{
     @Override
     public List<OrderDto> getOrderHistory(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("User","userId",userId));
-        List<Order> orders = orderRepository.findOrderByUser(userId);
+        List<Order> orders = orderRepository.findOrderByUser_Id(userId);
         if(orders == null || orders.isEmpty()){
             throw new InvalidRequestException("Order Not Found for this user");
         }
