@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+# Maven
+target/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Local properties - never push!
+application-local.properties
