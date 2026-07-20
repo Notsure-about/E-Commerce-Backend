@@ -4,7 +4,9 @@ import com.example.ecommerce.Dto.LoginRequestDto;
 import com.example.ecommerce.Dto.LoginResponseDto;
 import com.example.ecommerce.Dto.RegisterRequestDto;
 import com.example.ecommerce.Dto.UserDto;
+import com.example.ecommerce.Entity.Role;
 import com.example.ecommerce.Entity.User;
+import com.example.ecommerce.Repository.RoleRepository;
 import com.example.ecommerce.Repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +16,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @Service
 public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private RoleRepository repository;
  @Autowired
     private UserRepository userRepository;
  @Autowired
@@ -36,6 +42,9 @@ public class AuthService {
    user.setEmail(dto.getEmail());
    user.setPassword(passwordEncoder.encode(dto.getPassword()));
    user.setAbout(dto.getAbout());
+   //roles are defined here
+     Role userRole = repository.findByName("ROLE_USER").orElseThrow(()->new ResourceNotFoundException("Role","name",0L));
+     user.setRoles(Set.of(userRole));
     User saveduser =   userRepository.save(user);
     return  modelMapper.map(saveduser , UserDto.class);
  }

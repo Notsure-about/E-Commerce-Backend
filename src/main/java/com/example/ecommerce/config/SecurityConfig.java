@@ -34,7 +34,13 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
-//                        // PROTECTED endpoints
+                        // ADMIN endpoints
+                        .requestMatchers(HttpMethod.POST,"/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT , "/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE,"/products/**").hasRole("ADMIN")
+                               // ADMIN AND USER  endpoints
+                        .requestMatchers("/orders/**").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers("/cart/**").hasAnyRole("ADMIN","USER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

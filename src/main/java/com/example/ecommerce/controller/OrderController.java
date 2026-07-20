@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
-    @PostMapping ("/order/user/{userId}")
+    @PostMapping ("/user/{userId}")
     public ResponseEntity<OrderDto> placeOrder(@PathVariable Long userId){
         return ResponseEntity.ok(orderService.placeOrder(userId));
     }

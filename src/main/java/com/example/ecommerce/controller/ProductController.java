@@ -2,6 +2,7 @@ package com.example.ecommerce.controller;
 
 import com.example.ecommerce.Dto.ProductDto;
 import com.example.ecommerce.Service.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -24,11 +25,11 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto dto) {
+    public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductDto dto) {
        return new ResponseEntity <>(productService.createProduct(dto),HttpStatus.CREATED);
     }
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id,
+    public ResponseEntity<ProductDto> updateProduct(@Valid @PathVariable Long id,
                                                     @RequestBody ProductDto dto) {
         return ResponseEntity.ok(productService.UpdateProduct(id,dto));
     }
